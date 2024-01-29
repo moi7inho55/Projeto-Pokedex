@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pokedex</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f3f3f3;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+    
+    h1 {
+      color: #e44d26;
+      margin-top: 20px;
+    }
+    
+    #pokedex {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 20px;
+    }
+    
+    .pokemon {
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      padding: 15px;
+      margin: 15px;
+      width: 150px;
+      text-align: center;
+      background-color: #fff;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s ease-in-out;
+      cursor: pointer;
+    }
+    
+    .pokemon:hover {
+      transform: scale(1.1);
+    }
+    
+    img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 8px;
+    }
+    
+    .search-container {
+      margin-top: 20px;
+      display: flex;
+      align-items: center;
+    }
+    
+    .search-input {
+      padding: 10px;
+      width: 300px;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+    }
+    
+    .search-button {
+      padding: 10px;
+      cursor: pointer;
+      background-color: #e44d26;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      margin-left: 10px;
+      transition: background-color 0.3s ease-in-out;
+    }
+    
+    .search-button:hover {
+      background-color: #333;
+    }
+    
+    #pokemon-info {
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      margin-top: 20px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    #error-message {
+      margin-top: 10px;
+    }
+ </style>
+</head>
+</body>
+  </style>
+</head>
+<body>
+  <a href="/"> <h1>Pokemon </h1></a>
+  <div class="search-container">
+    <input type="text" id="search-input" class="search-input" placeholder="Search Pokémon...">
+    <button id="search-button" class="search-button" onclick="searchPokemon()">Search</button>
+  </div>
+  <div id="pokedex"></div>
+  <div id="pokemon-info"></div>
+  <div id="error-message" style="color: red;"></div>
+
+  <script>
+    async function fetchData(url) {
+      try {
+        const response = await fetch(url);
+        const data = await response.json();
+        return data;
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        throw error;
+      }
+    }
+
+    async function displayPokemon() {
+      try {
+        const pokedexContainer = document.getElementById('pokedex');
+        const pokemonList = await fetchData('https://pokeapi.co/api/v2/pokemon?limit=151');
+
+        for (const pokemon of pokemonList.results) {
+          const pokemonData = await fetchData(pokemon.url);
+          const pokemonCard = document.createElement('div');
+          pokemonCard.classList.add('pokemon');
+          pokemonCard.textContent = capitalizeFirstLetter(pokemon.name);
+
+          // Adicione um evento de clique para mostrar informações ao selecionar
+          pokemonCard.addEventListener('click', () => {
+            showPokemonInfo(pokemonData);
+          });
+
+          pokedexContainer.appendChild(pokemonCard);
+        }
+      } catch (error) {
+        console.error('Error displaying Pokémon:', error);
+      }
+    }
+
+    function showPokemonInfo(pokemonData) {
+      const pokemonInfoContainer = document.getElementById('pokemon-info');
+      pokemonInfoContainer.innerHTML = `
+        <h2>${capitalizeFirstLetter(pokemonData.name)}</h2>
+        <p>Type: ${pokemonData.types.map(type => type.type.name).join(', ')}</p>
+        <p>Height: ${pokemonData.height}</p>
+        <p>Weight: ${pokemonData.weight}</p>
+      `;
+
+      const pokemonImage = document.createElement('img');
+      pokemonImage.src = pokemonData.sprites.front_default;
+      pokemonImage.alt = pokemonData.name;
+
+      // Limpar containers antes de exibir os resultados da pesquisa
+     document.getElementById('pokedex').innerHTML = '';
+      //document.getElementById('pokemon-info').innerHTML = '';
+
+      document.getElementById('pokedex').appendChild(pokemonImage);
+     // document.getElementById('pokemon-info').appendChild(pokemonInfoContainer);
+    }
+
+    function capitalizeFirstLetter(string) {
+      return string.charAt(0).toUpperCase() + string.slice(1);
+    }
+
+    function searchPokemon() {
+      try {
+        const searchTerm = document.getElementById('search-input').value.toLowerCase();
+        const pokedexContainer = document.getElementById('pokedex');
+        const pokemonInfoContainer = document.getElementById('pokemon-info');
+        const errorMessageContainer = document.getElementById('error-message');
+
+        // Limpar containers antes de exibir os resultados da pesquisa
+        pokedexContainer.innerHTML = '';
+        pokemonInfoContainer.innerHTML = '';
+        errorMessageContainer.innerHTML = '';
+
+        let foundPokemon = false;
+
+        for (const pokemon of originalPokemonList) {
+          const pokemonName = pokemon.name.toLowerCase();
+
+          if (pokemonName.includes(searchTerm)) {
+            foundPokemon = true;
+
+            const pokemonData = originalPokemonData.find(data => data.name === pokemon.name);
+            const pokemonCard = document.createElement('div');
+            pokemonCard.classList.add('pokemon');
+            pokemonCard.textContent = capitalizeFirstLetter(pokemon.name);
+
+            // Adicione um evento de clique para mostrar informações ao selecionar
+            
+            pokemonCard.addEventListener('click', () => {
+              showPokemonInfo(pokemonData);
+              console.log(pokemonData)
+            });
+
+            pokedexContainer.appendChild(pokemonCard);
+          }
+        }
+
+        if (!foundPokemon) {
+          errorMessageContainer.innerHTML = 'No Pokémon found. Please check the name and try again.';
+        }
+      } catch (error) {
+        console.error('Error searching Pokémon:', error);
+      }
+    }
+
+    let originalPokemonList = [];
+    let originalPokemonData = [];
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      try {
+        const pokemonList = await fetchData('https://pokeapi.co/api/v2/pokemon?limit=151');
+        originalPokemonList = pokemonList.results;
+        originalPokemonData = await Promise.all(originalPokemonList.map(pokemon => fetchData(pokemon.url)));
+
+        // Exibir todos os Pokémon ao carregar a página
+        displayPokemon();
+      } catch (error) {
+        console.error('Error loading Pokémon:', error);
+      }
+    });
+  </script>
+</body>
+</html>
